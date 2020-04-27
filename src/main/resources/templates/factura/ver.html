@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/layout :: head"></head>
+<body>
+
+	<header th:replace="layout/layout :: header"></header>
+
+
+	<div class="containter py-4">
+
+		<div class="card bg-light">
+			<div class="card-header" th:text="${titulo}"></div>
+			<div class="card-body">
+
+				<h4>
+					<a class="btn btn-primary btn-xs"
+						th:href="@{'/ver/' + ${factura.cliente.id}}" th:text="#{text.factura.ver.button.regresar}"> Regresar</a>
+					<a class="btn btn-danger btn-xs float-right" th:href="@{'/factura/ver/' + ${factura.id} (format=pdf)}">PDF</a>
+					<a class="btn btn-success btn-xs float-right" th:href="@{'/factura/ver/' + ${factura.id} (format=xlsx)}">XLSX</a>
+				</h4>
+
+				<ul class="list-group">
+					<li class="list-group-item list-group-item-primary"
+						th:text="#{text.factura.ver.cliente.titulo}"></li>
+					<li class="list-group-item" th:text="${factura.cliente}"></li>
+					<li class="list-group-item" th:text="${factura.cliente.email}"></li>
+				</ul>
+
+				<ul class="list-group">
+					<li class="list-group-item list-group-item-success"
+						th:text="#{text.factura.ver.factura.titulo}"></li>
+					<li class="list-group-item" th:text="#{text.factura.ver.factura.folio} + ${factura.id}"></li>
+					<li class="list-group-item"
+						th:text="#{text.factura.ver.factura.descripcion} + ${factura.descripcion}"></li>
+					<li class="list-group-item"
+						th:text="#{text.factura.ver.factura.fecha} + ${factura.createAt}"></li>
+				</ul>
+
+				<div>
+					<h3 th:if="${factura.items.size() == 0}"
+						th:tex="'La factura no tiene lineas'"></h3>
+				</div>
+
+				<table class="table table-striped table-hover table-bordered my-3"
+					th:if="${factura.items.size() != 0}">
+					<thead>
+						<tr>
+							<th th:text="#{text.factura.ver.list.nombre}">Nombre</th>
+							<th th:text="#{text.factura.ver.list.precio}">Precio</th>
+							<th th:text="#{text.factura.ver.list.cantidad}">Cantidad</th>
+							<th th:text="#{text.factura.ver.list.subtotal}">Subtotal</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="item : ${factura.items}">
+							<td th:text="${item.producto.nombre}"></td>
+							<td th:text="${item.producto.precio}"></td>
+							<td th:text="${item.cantidad}"></td>
+							<td th:text="${item.calcularSubTotal()}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<h5 class="float-right">
+					Total: <span class="badge badge-secondary"
+						th:text="${factura.calcularTotal()}"></span>
+				</h5>
+
+				<div>
+					<div class="card border-info mb-4" style="max-width: 20rem;">
+						<div class="card-header" th:text="#{text.factura.ver.observaciones}">Observaciones</div>
+						<div class="card-body">
+							<p th:text="${factura.observacion}" th:if="${not #strings.isEmpty(factura.observacion)}"></p>
+							<h4 th:text="'No tiene observaciones'" th:if="${#strings.isEmpty(factura.observacion)}"></h4>
+						</div>
+					</div>
+				</div>
+				
+				<h4>
+					<a class="btn btn-primary btn-xs"
+						th:href="@{'/ver/' + ${factura.cliente.id}}" th:text="#{text.factura.ver.button.regresar}"> Regresar</a>
+				</h4>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<footer th:replace="layout/layout :: footer"></footer>
+
+</body>
+</html>

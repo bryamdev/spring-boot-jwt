@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="layout/layout :: head"></head>
+<body>
+
+	<header th:replace="layout/layout :: header"></header>
+
+
+	<!-- py-4 es para hacer un padding en el eje y de 4 -->
+	<div class="container py-4">
+
+		<div class="card bg-light">
+			<div class="card-header" th:text="${titulo}"></div>
+			<div class="card-body">
+
+				<h4 class="card-title">
+					<a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-primary btn-xs" th:href="@{/form}" th:text="#{text.cliente.button.crearcliente}" >Crear un nuevo cliente</a>
+				
+					<a class="btn btn-success btn-xs float-right" th:href="@{'/listar'(page=${nPagina}, format=csv)}">CSV</a>
+					<a class="btn btn-outline-success btn-xs float-right mx-2" th:href="@{'/listar'(page=${nPagina}, format=xml)}">XML</a>
+					<a class="btn btn-outline-danger btn-xs float-right mx-2" th:href="@{'/listar'(page=${nPagina}, format=json)}">JSON</a>
+				</h4>
+				
+
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th sec:authorize="hasRole('ROLE_USER')">Id</th>
+							<th th:text="#{text.cliente.nombre}">Nombre</th>
+							<th th:text="#{text.cliente.apellido}">Apellido</th>
+							<th th:text="#{text.cliente.email}">Email</th>
+							<th th:text="#{text.cliente.createAt}">Fecha Creacion</th>
+							<th sec:authorize="hasRole('ROLE_ADMIN')" th:text="#{text.cliente.crearfactura}">Crear Factura</th>
+							<th sec:authorize="hasRole('ROLE_ADMIN')" th:text="#{text.cliente.editar}">Editar</th>
+							<th sec:authorize="hasRole('ROLE_ADMIN')" th:text="#{text.cliente.eliminar}">Eliminar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="cliente : ${clientes}">
+							<td sec:authorize="hasRole('ROLE_USER')">
+								<a class="btn btn-primary" th:href="@{'/ver/' + ${cliente.id}}" th:text="${cliente.id}"></a>
+							</td>
+							<td th:text="${cliente.nombre}"></td>
+							<td th:text="${cliente.apellido}"></td>
+							<td th:text="${cliente.email}"></td>
+							<td th:text="${cliente.createAt}"></td>
+							<td sec:authorize="hasRole('ROLE_ADMIN')">
+								<a class="btn btn-success btn-xs" th:href="@{'/factura/form/' + ${cliente.id}}" th:text="#{text.cliente.button.crearfactura}"></a>
+							</td>
+							<td sec:authorize="hasRole('ROLE_ADMIN')"><a class="btn btn-primary btn-xs"
+								th:href="@{/form/} + ${cliente.id}" th:text="#{text.cliente.button.editar}"></a></td>
+							<td sec:authorize="hasRole('ROLE_ADMIN')"><a class="btn btn-danger btn-xs"
+								th:href="@{/eliminar/} + ${cliente.id}" th:text="#{text.cliente.button.eliminar}"
+								onclick="return confirm(document.getElementById('alertEliminar').innerHTML);"></a></td>
+						</tr>
+					</tbody>
+				</table>
+				
+				<nav th:replace="paginator-nav :: paginator"></nav>
+				
+				<div th:text="#{text.cliente.alert.eliminar}" id="alertEliminar" style="display: none;"></div>
+	
+				<!-- 
+				<div>
+					<h2 th:if="${clientes.size()==0}">La tabla clientes no tiene
+						registros</h2>
+					<h2 th:if="${clientes.size()>0}">Si existen registros</h2>
+					<h2 th:text="${clientes.size()}"></h2>
+				</div>
+				 -->
+			</div>
+
+		</div>
+
+	</div>
+
+	<footer th:replace="layout/layout :: footer"></footer>
+
+</body>
+</html>

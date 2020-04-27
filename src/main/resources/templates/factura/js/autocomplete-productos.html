@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+	<script type="text/javascript" th:fragment="javascript">
+		
+$(document).ready(function(){
+	
+	//Funcion 'autocomplete' recibe un objeto con dos metodos
+	$("#buscar_producto").autocomplete({
+		
+		//Metodo que se encarga de realizar la petición ajax
+		//'term' parametro que contiene el valor que se esta ingresando en el input...
+		//... url como pathvariable o en data como requestparam
+		//funcion 'success' recibe los datos(json) y los pasa al autocomplete por medio del 'response'
+		source: function(request, response){
+			$.ajax({
+				url: "/factura/cargar-productos/" + request.term,
+				dataType: "json",
+				data:{
+					term: request.term
+				},
+				success: function(data){
+					response($.map(data, function(item){
+						return{
+							value: item.id,
+							label: item.nombre,
+							precio: item.precio
+						};
+					}));
+				},
+				
+			});
+		},
+		
+		
+		//Metodo procesa el reultado y usa los datos de este
+		//ejecuta una tarea cuando se selecciona un elemento del autocomplete
+		//Se pasa al elemento input el label(nombre de producto) seleccionado
+		select: function(event, ui){
+			//$('#buscar_producto').val(ui.item.label);
+			
+			if(itemsHelper.hasProducto(ui.item.value)){
+				itemsHelper.incrementarCantidad(ui.item.value, ui.item.precio);
+				return false;
+			}
+			
+			var lineaTablaPlantilla = $("#plantillaItemsFactura").html();
+			lineaTablaPlantilla = lineaTablaPlantilla.replace(/{ID}/g, ui.item.value);
+			lineaTablaPlantilla = lineaTablaPlantilla.replace(/{NOMBRE}/g, ui.item.label);
+			lineaTablaPlantilla = lineaTablaPlantilla.replace(/{PRECIO}/g, ui.item.precio);
+			
+			//Remplaza el contenido del tbody por el de la plantilla modificada
+			$("#tablaACargarProductos tbody").append(lineaTablaPlantilla);
+			itemsHelper.calcularSubTotal(ui.item.value, ui.item.precio, 1);
+			
+			
+			
+			
+			return false;
+		}
+		
+		
+	});
+	
+	//Se borra el fragmento de la plantilla cuando ocurre el evento submit
+	$("form").submit(function(){
+		$("#plantillaItemsFactura").remove();
+	});
+
+});
+
+var itemsHelper = {
+	calcularSubTotal: function(id, precio, cantidad){
+		$("#subTotal_" + id).html(parseInt(precio) * parseInt(cantidad));
+		itemsHelper.calcularGranTotal();
+	},
+	hasProducto: function(id){
+		
+		var resultado = false;
+		//por cada input que tenga con name valor de "item_id[]"
+		$('input[name="item_id[]"]').each(function(){
+			if(parseInt($(this).val()) == parseInt(id)){
+				resultado = true;
+			}
+		});
+		
+		return resultado;
+	},
+	incrementarCantidad: function(id, precio){
+		var cantidad = $("#cantidad_" + id).val();
+		$("#cantidad_" + id).val(++cantidad);
+		//alert($("#precio_" + id).html());
+		//alert(parseInt($("#precio_" + id).html()) * cantidad);
+		this.calcularSubTotal(id, precio, cantidad);
+	},
+	eliminarFila: function(id){
+		$("#row_" + id).remove();
+		itemsHelper.calcularGranTotal();
+	},
+	calcularGranTotal: function(){
+		var total = 0;
+		//con '^' antes del '=' indica que todos los span con id que contengan ese valor....
+		$('span[id^="subTotal_"]').each(function(){
+			total += parseInt($(this).html());
+		});
+		
+		$("#granTotal").html(total);
+		
+	}
+	
+};
+	
+	</script>
+
+</body>
+</html>
